@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+option go_package = "modist/proto";
+
+package proto;
+
+enum Consistency {
+  NONE = 0;
+  CAUSAL = 1;
+  LINEARIZABLE = 2;
+}
+
+// Only ONE OF the following fields need to be defined
+message Clock {
+  // Plain timestamp for LWW
+  uint64 timestamp = 1;
+  // Version vector from node ID to count 
+  map<uint64, uint64> vector = 2;
+}
+
+message PutRequest {
+  string key = 1;
+  string value = 2;
+  Clock clock = 3;
+}
+
+message PutReply {
+  Clock clock = 1;
+}
+
+message GetMetadata {
+  Clock clock = 1;
+  Consistency consistency = 2;
+}
+
+message GetRequest {
+  string key = 1;
+  GetMetadata metadata = 2;
+}
+
+message GetReply {
+  string value = 1;
+  Clock clock = 2;
+}

@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+option go_package = "modist/proto";
+import "proto/api.proto";
+
+package proto;
+
+service Replicator {
+  // ReplicateKey can use its own strategy to replicate the given key onto
+  // any number of additional nodes. It can be synchronous or asynchronous.
+  rpc ReplicateKey(PutRequest) returns (PutReply) {}
+
+	// GetReplicatedKey can use any strategy to read a given key from any
+	// set of nodes. The consistency level of the read can be hinted at
+	// through the metdata field.
+  rpc GetReplicatedKey(GetRequest) returns (GetReply) {}
+}

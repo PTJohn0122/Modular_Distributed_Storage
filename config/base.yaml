@@ -1,0 +1,14 @@
+routing:
+  nodes: 1
+  mode: local
+
+partitioning:
+  - name: p1
+    assignment_mode: single
+    replica_groups:
+      - r1
+
+replication:
+  - name: r1
+    nodes: 3
+    mode: leaderless

@@ -1,0 +1,31 @@
+routing:
+  nodes: 5
+  mode: tapestry
+
+partitioning:
+  - name: partitioner1
+    assignment_mode: consistent_hash
+    consistent_hash_virtual_nodes: 1
+    replica_groups:
+      - r1
+      - r2
+  - name: partitioner2
+    assignment_mode: consistent_hash
+    consistent_hash_virtual_nodes: 3
+    replica_groups:
+      - r3
+      - r4
+
+replication:
+  - name: r1
+    nodes: 5
+    mode: raft
+  - name: r2
+    nodes: 5
+    mode: raft
+  - name: r3
+    nodes: 5
+    mode: raft
+  - name: r4
+    nodes: 5
+    mode: raft

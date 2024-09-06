@@ -1,0 +1,102 @@
+syntax = "proto3";
+
+option go_package = "modist/proto";
+
+package proto;
+
+// A log entry in Raft can be any of the following types
+enum EntryType {
+    NORMAL = 0;
+}
+
+message LogEntry {
+    // Index of log entry (first index = 1)
+    uint64 Index = 1;
+    // Term this entry was in when added
+    uint64 Term = 2;
+    // Type of command associated with this entry
+    EntryType Type = 3;
+    // Data associated with this log entry in the user's finite-state-machine.
+    bytes Data = 4;
+}
+
+message AppendEntriesRequest {
+    // ID of leader node sending request 
+    uint64 From = 1; 
+    // ID of node that will receive request
+    uint64 To = 2;  
+    // Leader's term
+    uint64 Term = 3; 
+    // Index of the log entry immediately preceding the new ones
+    uint64 PrevLogIndex = 4;
+    // Term of the log entry at prevLogIndex
+    uint64 PrevLogTerm = 5;
+    // Log entries the follower needs to store. Empty for heartbeat messages.
+    repeated LogEntry Entries = 6;
+    // Leader's commitIndex
+    uint64 LeaderCommit = 7;
+}
+
+message AppendEntriesReply {
+    // ID of node that received AppendEntriesRequest
+    uint64 From = 1;
+    // ID of leader node that sent AppendEntriesRequest
+    uint64 To = 2;
+    // Current term on receiving node, for leader to update itself.
+    uint64 Term = 3;
+    // True if follower contained entry matching PrevLogIndex and PrevLogTerm.
+    bool Success = 4;
+}
+
+message RequestVoteRequest {
+    // ID of candidate node requesting a vote
+    uint64 From = 1;
+    // ID of node that will receive request
+    uint64 To = 2;
+    // Candidate's current term
+    uint64 Term = 3;
+    // Index of candidate's last log entry
+    uint64 LastLogIndex = 5;
+    // Term of log entry at LastLogIndex
+    uint64 LastLogTerm = 6;
+}
+
+message RequestVoteReply {
+    // ID of node that received RequestVoteRequest
+    uint64 From = 1;
+    // ID of candidate node that sent RequestVoteRequest
+    uint64 To = 2;
+    // Current term on receiving node, for candidate to update itself
+    uint64 Term = 3;
+    // True if candidate received vote
+    bool VoteGranted = 4;
+}
+
+message ProposalRequest {
+    // ID of node sending request 
+    uint64 From = 1;
+    // ID of node that will receive request
+    uint64 To = 2;
+    // Data that leader needs to update its finite-state-machine
+    bytes Data = 3;
+}
+
+message ProposalReply {
+    // No reply
+}
+
+// RaftRPC are the RPCs internal to the raft implementation. 
+// They are not intended to be used by clients.
+service RaftRPC {
+    // All of the following RPCs are intended to be invoked on node X by some node Y
+
+    // Invoked by leader to replicate log entries; also used as a heartbeat
+    // between leaders and followers
+    rpc AppendEntries (AppendEntriesRequest) returns (AppendEntriesReply) {}
+
+    // Invoked by candidate nodes to request votes from other nodes
+    rpc RequestVote (RequestVoteRequest) returns (RequestVoteReply) {}
+
+    // Invoked by follower nodes to propagate proposal message to leader node
+    rpc Propose (ProposalRequest) returns (ProposalReply) {}
+}

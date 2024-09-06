@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+option go_package = "modist/proto";
+import "proto/api.proto";
+
+package proto;
+
+// ResolvableKV is a key-value pair that can be conflict-resolved with other ResolvableKV's. The
+// resolution strategy is done via the clock field, which could be as simple as a timestamp or as
+// complex as a version vector.
+message ResolvableKV {
+  string key = 1;
+  string value = 2;
+  Clock clock = 3;
+}
+
+message Key {
+  string key = 1;
+  Clock clock = 2;
+}
+
+message HandlePeerWriteReply {
+  // Whether the node accepted the KV trying to be replicated
+  bool accepted = 1;
+
+  // If the node did not accept the KV trying to be replicated, then it should respond with a
+  // more up-to-date value
+  optional ResolvableKV resolvable_kv = 2;
+}
+
+message HandlePeerReadReply {
+  bool found = 1;
+  optional ResolvableKV resolvable_kv = 2;
+}
+
+// BasicLeaderlessReplicator are the RPCs internal to the basic leaderless replication
+// service. They are not intended to be used by clients.
+service BasicLeaderlessReplicator {
+  // Called on node X when some node Y is replicating a key to X.
+  // 
+  // If the given timestamped KV is behind that stored on X, it is not accepted, and instead,
+  // a more up-to-date timestamped KV pair is returned. 
+  rpc HandlePeerWrite(ResolvableKV) returns (HandlePeerWriteReply) {}
+
+  // Returns the given timestamped KV for the given key. Called when a node is trying to do a
+  // quorum read for the given key.
+  rpc HandlePeerRead(Key) returns (HandlePeerReadReply) {}
+}

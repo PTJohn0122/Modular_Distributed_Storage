@@ -1,0 +1,116 @@
+//
+//  Brown University, CS138, Spring 2023
+//
+//  Purpose: Defines the Tapestry RPC protocol using Google's Protocol Buffers
+//  syntax. See https://developers.google.com/protocol-buffers for more details.
+syntax = "proto3";
+
+option go_package = "modist/proto";
+
+package proto;
+
+message Ok { bool ok = 1; }
+
+message IdMsg {
+    string id = 1;   // ID of key to find or of local node
+    int32 level = 2; // Level in routing table to begin searching at
+}
+
+message RootMsg {
+    string next = 1;              // ID of root node
+    repeated string toRemove = 2; // IDs of nodes to remove
+}
+
+message DataBlob {
+    bytes data = 1; // Data associated with key (addresses for replica group)
+    string key = 2; // Key (replica group ID)
+}
+
+message TapestryKey {
+    string key = 1; // Key (replica group ID)
+}
+
+message Registration {
+    string fromNode = 1; // ID of node storing the blob for the key
+    string key = 2;      // Key (replica group ID)
+}
+
+message NodeMsg {
+    string id = 1; // ID of node
+}
+
+message FetchedLocations {
+    bool isRoot = 1; // Whether this node is the root node for the queried key
+    repeated string values = 2; // IDs of all the nodes storing the blob for the queried key
+}
+
+message Neighbors {
+    repeated string neighbors = 1; // IDs of neighbors
+}
+
+message MulticastRequest {
+    string newNode = 1; // ID of new node
+    int32 level = 2;    // Row in routing table to propagate request to
+}
+
+message TransferData {
+    string from = 1;                 // ID of node data is being trasferred from
+    map<string, Neighbors> data = 2; // Location map being transferred
+}
+
+message BackpointerRequest {
+    string from = 1; // ID of from node
+    int32 level = 2; // Level to get backpointers at
+}
+
+message LeaveNotification {
+    string from = 1;        // ID of node that is leaving
+    string replacement = 2; // ID of suitable alternative node for routing table
+}
+
+// TapestryRPC are the RPCs internal to the tapestry implementation.
+// They are not intended to be used by clients.
+service TapestryRPC {
+    // All of the following RPCs are intended to be invoked on node X by node Y
+
+    // Invoked to find the ID of the root node for a key or a local node ID
+    rpc FindRoot(IdMsg) returns (RootMsg) {}
+
+    // Invoked by a remote node on a root node to register themselves as an
+    // advertiser of the key
+    rpc Register(Registration) returns (Ok) {}
+
+    // Invoked to retrieve all nodes that are registered in the local location
+    // map for this key
+    rpc Fetch(TapestryKey) returns (FetchedLocations) {}
+
+    // Invoked to add a new node to the Tapestry mesh
+    rpc AddNode(NodeMsg) returns (Neighbors) {}
+
+    // Invoked to remove a set of nodes from the routing table and from the set of
+    // backpointers
+    rpc RemoveBadNodes(Neighbors) returns (Ok) {}
+
+    // Invoked to inform nodes of a new node that has joined the Tapestry mesh and 
+    // to carry out the appropriate transfer of location data
+    rpc AddNodeMulticast(MulticastRequest) returns (Neighbors) {}
+
+    // Invoked to transfer data to a remote node
+    rpc Transfer(TransferData) returns (Ok) {}
+
+    // Invoked to notify a remote node of a backpointer
+    rpc AddBackpointer(NodeMsg) returns (Ok) {}
+
+    // Invoked to notify a remote node of backpointer removal
+    rpc RemoveBackpointer(NodeMsg) returns (Ok) {}
+
+    // Invoked to get all backpointers at a specified level
+    rpc GetBackpointers(BackpointerRequest) returns (Neighbors) {}
+
+    // Invoked to notify a remote node that the local node is leaving the
+    // Tapestry mesh
+    rpc NotifyLeave(LeaveNotification) returns (Ok) {}
+
+    // Invoked to fetch the data corresponding to a key from the blob store
+    rpc BlobStoreFetch(TapestryKey) returns (DataBlob) {}
+}

@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+option go_package = "modist/proto";
+
+package proto;
+
+service Router {
+    rpc Lookup(RouteLookupRequest) returns (RouteLookupReply) {}
+
+    rpc Publish(RoutePublishRequest) returns (RoutePublishReply) {}
+
+    rpc Unpublish(RouteUnpublishRequest) returns (RouteUnpublishReply) {}
+}
+
+message RouteLookupRequest {
+    uint64 id = 1;
+}
+
+message RouteLookupReply {
+    repeated string addrs = 1;
+}
+
+message RoutePublishRequest {
+    uint64 id = 1;
+    string addr = 2;
+}
+
+message RoutePublishReply {
+}
+
+message RouteUnpublishRequest {
+    uint64 id = 1;
+    string addr = 2;
+}
+
+message RouteUnpublishReply {
+}

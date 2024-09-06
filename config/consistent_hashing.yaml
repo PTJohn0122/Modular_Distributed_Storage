@@ -1,0 +1,23 @@
+routing:
+  nodes: 1
+  mode: local
+
+partitioning:
+  - name: partitioner_1
+    assignment_mode: consistent_hash
+    consistent_hash_virtual_nodes: 1
+    replica_groups:
+      - r1
+      - r2
+      - r3
+
+replication:
+  - name: r1
+    nodes: 3
+    mode: leaderless
+  - name: r2
+    nodes: 3
+    mode: leaderless
+  - name: r3
+    nodes: 3
+    mode: leaderless

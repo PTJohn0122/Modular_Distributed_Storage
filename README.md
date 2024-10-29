@@ -23,12 +23,12 @@ Please check Issue tab for more information.
 
 ## Usage
 
-Modist docker image is available at [here]().
+Modist docker image is available at [here](https://hub.docker.com/layers/ptjohn0122/modist/latest/images/sha256:c5a2d62ba6490b777db17e1abfd1da8f5ed11beedb0bfa84eb3d3d82b9efe828?uuid=12790BD7-25E7-45A5-A81B-26B2C708E1A3).
 
 Usage of Modist Docker Image:
 
 ```shell
-docker pull PTJohn0122/modular_distributed_storage_go:latest
+docker pull PTJohn0122/modist:latest
 ```
 
 While docker is provided as general solution, modist also provide local package for development and integration. To use,

@@ -1,58 +1,39 @@
-# modist
-Created by Yutong Li(yli195) and Xingjian Hao(xhao9).
+# Modist
+[![](https://skillicons.dev/icons?i=go,docker)](https://skillicons.dev)
 
-## Known Bugs
-No know bugs detected thus far.
+Store your data on Modist, a document-based Daas(Database as a service) that support docker deployment.
 
-## Extra Features
-No extra feature implemented thus far.
+For more detail, please read this [developer blog](https://xjhao.studio/02/25/2023/modist/).
 
-## Tests Overview
+Docker swarm supporting on the way...
 
-### Clocks & Conflicts 
-- TestPhysicalConcurrentEventsHappenBefore: Test the happensBefore relationship between zero clock, 3 clocks with random timestamp, and a new clock
+Created by Yutong Li(yli195) and Xingjian Hao(xhao9). Backup and updated from private reporsitory.
 
-- TestPhysicalConcurrentEventsHappenConcurrently: Test the happensBefore relationship between 2 physical clocks with the same timestamp
+## What is is
+Modist, or Modular Distributed Storage, is a distributed databse that supports multiple synchoronization model setups for each functionality domain. Common issues for distributed systems are addressed with proven solutions from academia and industry. 
 
-- TestPhysicalClockConflictResolvingNoConflict: Test the conflict resolver when no args are passed in
+Modist is built with BoltDB, gRPC, and Protobuf. The system overall applies a raft schema, and each nodes meantained local replication and partitioning for data safety.
 
-- TestPhysicalClockConflictResolving: Test basic conflict resolving with 3 KVs with the same timestamp and different values
+![Raft](src/raft.png)
 
-- TestMessageReceive: Test the happensBefore relation of a vector clock when receive a message. Two clocks are received and the vector should retain the one with highest value.
+![Node](src/system.png)
 
-- TestMessageSend: Test the incrementation of vectors when send a message.
+## Known Issues
+Please check Issue tab for more information.
 
-- TestNewClock: Test the creation of a new clock based on the current clock. The new clock should be a deep-copy of the original clock.
+## Usage
 
-- TestResolveConflict: Test the clock merging when there is a confliction of vectors for multiple incoming clocks.
+Modist docker image is available at [here]().
 
-- TestHappenBeforeHeteroNodeIDCase: Test the happenBefore relationship when two conflict vectors have values on different nodeID.
+Usage of Modist Docker Image:
 
-- func TestHappenBeforeEmptyCase: Test the happenBefore relationship when an empty vector meet a all-zero vector.
+```shell
+docker pull PTJohn0122/modular_distributed_storage_go:latest
+```
 
-### Leaderless
-- TestHandlePeerWrite: Test 4 cases: 1) a new KV with a new key, 2) a concurrent KV with larger lexically value, 3) an outdated KV, 4) a newer KV
+While docker is provided as general solution, modist also provide local package for development and integration. To use,
 
-### Partitioning
-- Test_Lookup_SimpleIdentity： test the basic operation of lookup function, including specific number and new number falls into intervals.
-
-- Test_AddReplicaGroup: test the adding of groups with lookup checks and nodes number check
-
-- Test_RemoveReplicaGroup: test the removal of groups with lookup checks and nodes number check 
-
-- Test_RemoveReplicaGroup_Empt: test the removal of groups when the hash cycle is empty
-
-- Test_AddRemoveReplicaGroup: test the basic operations of adding and removing replica groups, including adding, checking cycle length, removing exist group and unexist group. 
-
-### Tapestry 
-
-#### Implementation Rules
-By all the reading and understanding of materials, we defined serval rules in our implementations:
-- All gRPC instances within for loops should be wrapped in a go routine function 
-- If a function returns ```(&pb.Ok, err)```, we only return ```err``` when there is a RPC fail. This means a lost connection to the node with target ID.
-- After a RPC instance failed and returned an ```err```, we should call removeBadNode(remoteID) to remove this broken ID from our local routing and backpointer tables. (Now only in Join() and AddMulticast())
-- For AddNodeMultiCast, we added a base case when level > 40, so the transfer() of neighbors would be happen only on the last level. This can save transaction workflow. 
-
-#### Testing Specifics
-- id_test.go: test the basic helper functions for id realted operations
-- sample_test.go: testing the outmost functionalities of tapestry nodes
+```shell
+git clone https://github.com/PTJohn0122/Modular_Distributed_Storage.git
+go build
+```
